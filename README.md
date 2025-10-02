@@ -9,22 +9,23 @@ Tudo está em **um único arquivo** (`custom_topo.py`) para facilitar execução
 
 ---
 
-## 1) Topologia da Rede
+## 1) 📡 Topologia da Rede
 
 A topologia implementada neste projeto é composta por **5 roteadores interconectados** (`r1`–`r5`) e **3 hosts de borda** (`h1`, `h2`, `h3`).  
 
-<img width="696" height="304" alt="Screenshot 2025-10-02 at 09 16 46" src="https://github.com/CinthiaBecher/TGA-roteamento-dinamico/blob/main/topologia.png">
+<img width="696" height="304" alt="Screenshot 2025-10-02 at 09 16 46" src="https://github.com/user-attachments/assets/944b09ce-a207-4ad6-93b4-4aab2033634c" />
 
-- **Hosts**
-  - `h1` (IP `10.0.1.10`) conectado ao roteador `r1` (rede `10.0.1.0/24`)  
-  - `h2` (IP `10.0.2.10`) conectado ao roteador `r3` (rede `10.0.2.0/24`)  
-  - `h3` (IP `10.0.3.10`) conectado ao roteador `r5` (rede `10.0.3.0/24`)  
+- **Hosts**  
+  - `h1` conectado ao roteador `r1` (rede `10.0.1.0/24`)  
+  - `h2` conectado ao roteador `r3` (rede `10.0.2.0/24`)  
+  - `h3` conectado ao roteador `r5` (rede `10.0.3.0/24`)  
 
 - **Enlaces entre roteadores** (com largura de banda definida):  
   - `r1 — r2` → `10.0.12.0/24`, **5 Mbps**  
   - `r2 — r3` → `10.0.23.0/24`, **10 Mbps**  
-  - `r1 — r4` → `10.0.14.0/24`, **10 Mbps**
-  - `r4 — r3` → `10.0.14.0/24`, **10 Mbps**    
+  - `r1 — r4` → `10.0.14.0/24`, **10 Mbps**  
+  - `r4 — r3` → `10.0.43.0/24`, **10 Mbps**  
+  - `r2 — r4` → `10.0.24.0/24`, **8 Mbps**  
   - `r4 — r5` → `10.0.45.0/24`, **10 Mbps**  
   - `r3 — r5` → `10.0.35.0/24`, **8 Mbps**  
 
@@ -113,7 +114,7 @@ Caminho percorrido (instale `traceroute`/`tracepath` antes):
 ```bash
 mininet> h1 traceroute -n 10.0.2.10
 # ou
-mininet> h1 tracepath -n 10.0.2.10
+mininet> h1 tracepath 10.0.2.10
 ```
 
 Ver as **rotas instaladas** pelos algoritmos:
@@ -184,52 +185,16 @@ mininet> exit
 
 ---
 
-## 7) Como funciona o algoritmo LB-DV (Distance Vector sensível à carga)
+## 7) Como funciona o algoritmo LB-DV
 
+
+### LB-DV (Distance Vector sensível à carga)
 - Métrica de link: `c(e) = 1 + w_load · U(e)`;
   - `U(e)`: **utilização** medida via contadores `/sys/class/net/*/statistics/*` durante uma janela `--interval`;
   - `w_load`: peso de sensibilidade à carga (default `4.0`, aumente para impactar mais);
 - O custo total do caminho é a **soma** dos custos dos links;
 - Também usa **split horizon + poison reverse**;
 - Durante a convergência, **mede utilização** e **recalcula rotas**; ao final instala com `ip route`.
-
----
-
-## 8) Comparação de Resultados: RIP vs. LB-DV
-
-Através dos testes realizados, a diferença mais notável foi que o RIP (baseado em contagem de saltos) favorece caminhos com menos saltos, enquanto o LB-DV (com custo de link = 1 + peso × utilização) pode escolher rotas mais longas, mas com links de maior largura de banda ou menos congestionados (embora sem tráfego, ele se comporta como o RIP).
-
-### 8.1) Resultados gerais
-
-| Característica | RIP (Distance Vector Clássico) | LB-DV (Custo de Carga) | Observações |
-| :--- | :--- | :--- | :--- |
-| **Métrica de Custo** | Contagem de Saltos (Hops) | Custo de Link ($1 + w \cdot U$) | LB-DV usa a utilização ($U$) do link como fator. |
-| **Caminho (h1 → h2)** | `r1` → **`r2`** → `r3` | `r1` → **`r2`** → `r3` | Rota de 2 saltos (r1-r3) escolhida em ambos. |
-| **Caminho (h1 → h3)** | `r1` → **`r4`** → `r5` | `r1` → **`r4`** → `r5` | Rota de 2 saltos (r1-r5) escolhida em ambos. |
-| **IP do Salto 2 (h1 → h2)** | `10.0.12.2` (Interface do r2) | `10.0.12.2` (Interface do r2) | Rota via link r1-r2 (5 Mbps). |
-| **IP do Salto 2 (h1 → h3)** | `10.0.14.2` (Interface do r4) | `10.0.14.2` (Interface do r4) | Rota via link r1-r4 (10 Mbps). |
-| **Saltos Totais (Hosts)** | 4 saltos (2 roteadores) | 4 saltos (2 roteadores) | O custo de 2 saltos dominou sem congestionamento. |
-
-### 8.2) Análise das Tabelas de Rotas
-
-A tabela de rotas teve o mesmo tamamho entre ambos os protocolos de roteamento, porém houve algumas diferenças na origem da rota. Como exemplo, vamos comparar a tabela de rotas do roteador r3.
-
-O roteador **r3** é um nó crucial que conecta o host `h2` (`10.0.2.0/24`) e está no caminho de múltiplos roteadores (`r2`, `r4`, `r5`). A análise mostra uma diferença notável na rota para o destino `10.0.1.0/24` (Rede do h1).
-
-| Rota (r3 → Destino) | Next Hop (RIP) | Next Hop (LB-DV) | Próximo Roteador | Diferença Principal |
-| :---: | :---: | :---: | :---: | :---: |
-| **r3 → 10.0.1.0/24** (Rede do h1) | `via 10.0.23.1` | `via 10.0.43.1` | **r2** (RIP) / **r4** (LB-DV) | **Desempate!** RIP escolhe **r2**, LB-DV escolhe **r4**. |
-| **r3 → 10.0.3.0/24** (Rede do h3) | `via 10.0.35.2` | `via 10.0.35.2` | **r5** | Caminho de 1 salto escolhido em ambos. |
-
-Pode-se notar que esse roteador `r3`, ao utilizar o protocolo LB-DV, identifica a rede do `h1` via conexão com o `r4` (`10.0.43.1`). Por outro, ao utilizar o protocolo RIP, essa conexão é originada do `r2`(`10.0.23.1`). Essa diferença demonstra que no RIP, houve um desempate aleatório ou o `r2` enviou sua mensagem de atualização antes do `r4` na fase de convergência. Já no LB-DV, mesmo sem tráfego, o algoritmo deve ter tido um desempate baseado na precisão float dos custos iniciais (ou na ordem de processamento), preferindo a rota via `r4`. O caminho r3 -> r4 -> r1 (Link 10 Mbps, 10 Mbps) pode ter sido considerado marginalmente melhor que r3 -> r2 -> r1 (Link 10 Mbps, 5 Mbps) se a métrica estiver considerando a largura de banda. REVISAR!!!!!!
-
-### 8.3) Comparação de Desempenho (Latência Média RTT)
-
-| Rota | RIP (AVG RTT) | LB-DV (AVG RTT) | Diferença (%) |
-| :---: | :---: | :---: | :---: |
-| **h1 → h2** (10.0.2.10) | 1.023 ms | 1.497 ms | RIP foi mais rápido (~30%) |
-| **h1 → h3** (10.0.3.10) | 1.302 ms | 0.894 ms | LB-DV foi mais rápido (~30%) |
-| **Perda de Pacotes** | 0% | 0% | Ambos demonstraram conectividade estável. |
 
 ---
 
