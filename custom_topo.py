@@ -38,6 +38,12 @@ def mk_ip_from_cidr(cidr, host_last_octet):
     a,b,c,_ = map(int, ip.split('.'))
     return f"{a}.{b}.{c}.{host_last_octet}/{plen}"
 
+def mk_plain_ip_from_cidr(cidr, host_last_octet):
+    ip, _ = cidr.split('/')
+    a,b,c,_ = map(int, ip.split('.'))
+    return f"{a}.{b}.{c}.{host_last_octet}"
+
+
 # -----------------------------
 # RIP (DV hop-count)
 # -----------------------------
@@ -330,8 +336,8 @@ def main():
         neighbors[rb].append(ra)
 
         # mapeamentos direcionados: gw, intf local e bw
-        neighbor_gw_ip[(ra,rb)] = mk_ip_from_cidr(cidr, 2)  # GW é o IP do vizinho
-        neighbor_gw_ip[(rb,ra)] = mk_ip_from_cidr(cidr, 1)
+        neighbor_gw_ip[(ra,rb)] = mk_plain_ip_from_cidr(cidr, 2)
+        neighbor_gw_ip[(rb,ra)] = mk_plain_ip_from_cidr(cidr, 1)
         neighbor_intf[(ra,rb)] = rai
         neighbor_intf[(rb,ra)] = rbi
         link_bw_mbps[(ra,rb)] = bw
@@ -383,6 +389,12 @@ def main():
             h2.cmd('pkill -9 iperf3 || true')
             h2.cmd('iperf3 -s -D')
             h1.cmd('iperf3 -c 10.0.2.10 -t 14 -i 1 >/tmp/iperf_h1_h2.txt 2>&1 &')
+
+        # AQUECER o enlace r1<->r2 para que a medição pegue carga real
+        r2.cmd('pkill -9 iperf3 || true'); r2.cmd('iperf3 -s -D')
+        r1.cmd('iperf3 -c 10.0.12.2 -t 12 -i 1 >/tmp/iperf_r1_r2.txt 2>&1 &')
+        sleep(1)  # dá 1s para o fluxo estabilizar
+
 
         stats = lb_converge(
             net, lb, neighbors,
