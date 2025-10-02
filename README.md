@@ -24,7 +24,6 @@ A topologia implementada neste projeto é composta por **5 roteadores interconec
   - `r1 — r2` → `10.0.12.0/24`, **5 Mbps**  
   - `r2 — r3` → `10.0.23.0/24`, **10 Mbps**  
   - `r1 — r4` → `10.0.14.0/24`, **10 Mbps**  
-  - `r4 — r3` → `10.0.43.0/24`, **10 Mbps**  
   - `r2 — r4` → `10.0.24.0/24`, **8 Mbps**  
   - `r4 — r5` → `10.0.45.0/24`, **10 Mbps**  
   - `r3 — r5` → `10.0.35.0/24`, **8 Mbps**  
