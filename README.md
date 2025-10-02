@@ -9,29 +9,30 @@ Tudo está em **um único arquivo** (`custom_topo.py`) para facilitar execução
 
 ---
 
-## 1) Topologia
+## 1) 📡 Topologia da Rede
 
-Topologia **base** (sempre presente):
+A topologia implementada neste projeto é composta por **5 roteadores interconectados** (`r1`–`r5`) e **3 hosts de borda** (`h1`, `h2`, `h3`).  
 
-```
-h1—s1—r1—s2—r2—s4—r3—s5—h3
-           |
-           s3—h2
-```
+<img width="696" height="304" alt="Screenshot 2025-10-02 at 09 16 46" src="https://github.com/user-attachments/assets/944b09ce-a207-4ad6-93b4-4aab2033634c" />
 
-Sub-redes usadas:
-- `h1<->r1`: `10.0.1.0/24` (r1-eth0, h1-eth0)
-- `r1<->r2`: `10.0.12.0/24` (r1-eth1, r2-eth0)
-- `h2<->r2`: `10.0.2.0/24` (r2-eth1, h2-eth0)
-- `r2<->r3`: `10.0.23.0/24` (r2-eth2, r3-eth0)
-- `h3<->r3`: `10.0.3.0/24` (r3-eth1, h3-eth0)
+- **Hosts**  
+  - `h1` conectado ao roteador `r1` (rede `10.0.1.0/24`)  
+  - `h2` conectado ao roteador `r3` (rede `10.0.2.0/24`)  
+  - `h3` conectado ao roteador `r5` (rede `10.0.3.0/24`)  
 
-Opcional (**`--altlink`**): cria **caminho alternativo** entre `r1` e `r3` via `10.0.13.0/24`:
-```
-r1—s6—r3
-```
+- **Enlaces entre roteadores** (com largura de banda definida):  
+  - `r1 — r2` → `10.0.12.0/24`, **5 Mbps**  
+  - `r2 — r3` → `10.0.23.0/24`, **10 Mbps**  
+  - `r1 — r4` → `10.0.14.0/24`, **10 Mbps**  
+  - `r4 — r3` → `10.0.43.0/24`, **10 Mbps**  
+  - `r2 — r4` → `10.0.24.0/24`, **8 Mbps**  
+  - `r4 — r5` → `10.0.45.0/24`, **10 Mbps**  
+  - `r3 — r5` → `10.0.35.0/24`, **8 Mbps**  
 
-**Observação sobre switches:** todos os switches OVS sobem em **`failMode=standalone`** (não precisam de controller OpenFlow).
+Essa configuração forma uma **rede multipath**, permitindo que existam diferentes rotas possíveis entre os hosts, por exemplo:  
+
+- `h1 → h2`: via `r1–r2–r3` ou `r1–r4–r3`  
+- `h1 → h3`: via `r1–r4–r5` ou `r1–r2–r3–r5`  
 
 ---
 
