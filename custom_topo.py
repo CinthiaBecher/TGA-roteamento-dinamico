@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# custom_topo.py — Topologia maior com múltiplos caminhos + seleção de algoritmo: RIP (DV) ou LB-DV
+# custom_topo.py — Topologia maior com diferentes caminhos + seleção de algoritmo: RIP (DV) ou LB-DV
 # Exemplos:
 #   sudo python3 custom_topo.py --algo rip
 #   sudo python3 custom_topo.py --algo lb --autotraffic --wload 8 --rounds 10 --disable-offload
@@ -13,9 +13,7 @@ from mininet.link import TCLink
 import argparse
 from time import sleep
 
-# -----------------------------
 # Utilitários
-# -----------------------------
 def flush_and_set_ip(node, intf, cidr):
     node.cmd(f'ip -4 addr flush dev {intf}')
     node.cmd(f'ip link set {intf} up')
@@ -44,9 +42,7 @@ def mk_plain_ip_from_cidr(cidr, host_last_octet):
     return f"{a}.{b}.{c}.{host_last_octet}"
 
 
-# -----------------------------
 # RIP (DV hop-count)
-# -----------------------------
 INFINITY = 16
 
 class RIPNode:
@@ -111,9 +107,7 @@ def rip_converge(routers, neighbors, rounds=8):
             break
     return stats
 
-# -----------------------------
 # LB-DV (sensível à carga)
-# -----------------------------
 LB_INF = 10**6
 
 class LBDVNode:
@@ -201,9 +195,7 @@ def lb_converge(net, routers, neighbors, neighbor_intf, link_bw_mbps, w_load=4.0
             break
     return stats
 
-# -----------------------------
-# Topologia MAIOR com múltiplos caminhos
-# -----------------------------
+# Topologia
 class MultiPathTopo(Topo):
     """
     Roteadores: r1..r5 ; Hosts: h1 (r1), h2 (r3), h3 (r5)
@@ -267,7 +259,7 @@ def main():
     parser.add_argument('--disable-offload', action='store_true', help='Desativa GRO/TSO/GSO nas NICs')
     args = parser.parse_args()
 
-    info(f"🚀 Subindo topologia grande (algo={args.algo})\n")
+    info(f"🚀 Subindo topologia (algo={args.algo})\n")
     topo = MultiPathTopo()
     net = Mininet(topo=topo, controller=None, autoSetMacs=True, link=TCLink)
     net.start()
