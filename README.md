@@ -15,10 +15,10 @@ A topologia implementada neste projeto é composta por **5 roteadores interconec
 
 <img width="696" height="304" alt="Screenshot 2025-10-02 at 09 16 46" src="https://github.com/user-attachments/assets/944b09ce-a207-4ad6-93b4-4aab2033634c" />
 
-- **Hosts**  
-  - `h1` conectado ao roteador `r1` (rede `10.0.1.0/24`)  
-  - `h2` conectado ao roteador `r3` (rede `10.0.2.0/24`)  
-  - `h3` conectado ao roteador `r5` (rede `10.0.3.0/24`)  
+- **Hosts**
+  - `h1` (IP `10.0.1.10`) conectado ao roteador `r1` (rede `10.0.1.0/24`)  
+  - `h2` (IP `10.0.2.10`) conectado ao roteador `r3` (rede `10.0.2.0/24`)  
+  - `h3` (IP `10.0.3.10`) conectado ao roteador `r5` (rede `10.0.3.0/24`)  
 
 - **Enlaces entre roteadores** (com largura de banda definida):  
   - `r1 — r2` → `10.0.12.0/24`, **5 Mbps**  
@@ -114,7 +114,7 @@ Caminho percorrido (instale `traceroute`/`tracepath` antes):
 ```bash
 mininet> h1 traceroute -n 10.0.2.10
 # ou
-mininet> h1 tracepath 10.0.2.10
+mininet> h1 tracepath -n 10.0.2.10
 ```
 
 Ver as **rotas instaladas** pelos algoritmos:
