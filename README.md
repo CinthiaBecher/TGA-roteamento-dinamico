@@ -196,26 +196,8 @@ mininet> exit
 - Também usa **split horizon + poison reverse**;
 - Durante a convergência, **mede utilização** e **recalcula rotas**; ao final instala com `ip route`.
 
-
 ---
 
-## 9) Roteiro rápido para apresentação
+## Integrantes
 
-1. **RIP baseline**
-   ```bash
-   sudo python3 custom_topo.py --algo rip
-   # no mininet>
-   h1 ping h2
-   r1 ip route
-   r2 ip route
-   r3 ip route
-   ```
-
-2. **LB-DV desviando por carga**
-   ```bash
-   sudo python3 custom_topo.py --algo lb --altlink --autotraffic --wload 8 --rounds 10 --disable-offload
-   # no mininet>
-   h1 traceroute -n 10.0.2.10
-   r1 ip route | grep 10.0.2.0
-   ```
-   Mostre que a rota para `10.0.2.0/24` pode mudar de `via 10.0.12.2` (direto) para `via 10.0.13.2` (via r3) quando o link direto fica carregado.
+Cínthia Becher e Gabrielle Bussolo
