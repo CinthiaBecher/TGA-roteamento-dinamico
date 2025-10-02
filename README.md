@@ -13,7 +13,7 @@ Tudo está em **um único arquivo** (`custom_topo.py`) para facilitar execução
 
 A topologia implementada neste projeto é composta por **5 roteadores interconectados** (`r1`–`r5`) e **3 hosts de borda** (`h1`, `h2`, `h3`).  
 
-<img width="696" height="304" alt="Screenshot 2025-10-02 at 09 16 46" src="https://github.com/user-attachments/assets/944b09ce-a207-4ad6-93b4-4aab2033634c" />
+<img width="696" height="304" alt="topologia" src="https://github.com/CinthiaBecher/TGA-roteamento-dinamico/blob/main/topologia.png" />
 
 - **Hosts**  
   - `h1` conectado ao roteador `r1` (rede `10.0.1.0/24`)  
